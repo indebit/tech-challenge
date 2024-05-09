@@ -15,6 +15,7 @@ class ClientSeeder extends Seeder
     {
         // $user = User::first() ?? factory(User::class)->create();
 
+        // Moved the random user assignment to the factory in order to have different users for each client
         factory(Client::class, 150)->create([
             // 'user_id' => $user->id,
         ]);
