@@ -16,7 +16,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="client in clients" :key="client.id">
+                <tr v-for="client in localClients" :key="client.id">
                     <td>{{ client.name }}</td>
                     <td>{{ client.email }}</td>
                     <td>{{ client.phone }}</td>
@@ -39,9 +39,24 @@ export default {
 
     props: ['clients'],
 
+    data() {
+        return {
+            localClients: [],
+        }
+    },
+
+    mounted() {
+        this.localClients = [...this.clients];
+    },
+
     methods: {
         deleteClient(client) {
-            axios.delete(`/clients/${client.id}`);
+            axios.delete(`/clients/${client.id}`)
+                .then(response => {
+                    if (response.data === 'Deleted') {
+                        this.localClients = this.localClients.filter(c => c.id !== client.id);
+                    }
+                });
         }
     }
 }
