@@ -28,6 +28,8 @@ class ClientsController extends Controller
     {
         $client = Client::with('bookings')->where('id', $client)->first();
 
+        $this->authorize('view', $client);
+
         return view('clients.show', ['client' => $client]);
     }
 
