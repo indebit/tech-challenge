@@ -10,11 +10,7 @@ class ClientsController extends Controller
 {
     public function index()
     {
-        $clients = Client::where('user_id', auth()->id())->get();
-
-        foreach ($clients as $client) {
-            $client->append('bookings_count');
-        }
+        $clients = Client::where('user_id', auth()->id())->withCount('bookings')->get();
 
         return view('clients.index', ['clients' => $clients]);
     }
@@ -24,10 +20,8 @@ class ClientsController extends Controller
         return view('clients.create');
     }
 
-    public function show($client)
+    public function show(Client $client)
     {
-        $client = Client::with('bookings')->where('id', $client)->first();
-
         $this->authorize('view', $client);
 
         return view('clients.show', ['client' => $client]);
@@ -35,22 +29,16 @@ class ClientsController extends Controller
 
     public function store(StoreClientRequest $request)
     {
-        $client = new Client;
-        $client->user_id = auth()->id();
-        $client->name = $request->get('name');
-        $client->email = $request->get('email');
-        $client->phone = $request->get('phone');
-        $client->address = $request->get('address');
-        $client->city = $request->get('city');
-        $client->postcode = $request->get('postcode');
-        $client->save();
+        $client = auth()->user()->clients()->create($request->validated());
 
         return $client;
     }
 
-    public function destroy($client)
+    public function destroy(Client $client)
     {
-        Client::where('id', $client)->delete();
+        $this->authorize('delete', $client);
+
+        $client->delete();
 
         return 'Deleted';
     }

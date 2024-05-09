@@ -65,7 +65,7 @@ export default {
         storeClient() {
             axios.post('/clients', this.client)
                 .then((data) => {
-                    window.location.href = data.data.url;
+                    window.location.href = `/clients/${data.data.id}`;
                 })
                 .catch((error) => {
                     this.errors = error.response.data.errors;

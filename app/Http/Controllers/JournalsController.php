@@ -13,7 +13,7 @@ class JournalsController extends Controller
     {
         $this->authorize('view', $client);
 
-        $journals = Journal::all();
+        $journals = $client->journals;
 
         return $journals;
     }

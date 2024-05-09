@@ -43,7 +43,7 @@ export default {
         storeJournal() {
             axios.post(`/clients/${this.client.id}/journals`, this.journal)
                 .then((data) => {
-                    window.location.href = data.data.url;
+                    window.location.href = `/clients/${this.client.id}`;
                 })
                 .catch((error) => {
                     this.errors = error.response.data.errors;

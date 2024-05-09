@@ -21,14 +21,13 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::group(['middleware' => 'auth', 'prefix' => 'clients'], function () {
-    Route::get('/', 'ClientsController@index')->name('clients.index');
-    Route::get('/create', 'ClientsController@create');
-    Route::post('/', 'ClientsController@store');
-    Route::get('/{client}', 'ClientsController@show');
-    Route::delete('/{client}', 'ClientsController@destroy');
+Route::group(['middleware' => 'auth'], function () {
+    Route::resource('clients', ClientsController::class)->except(['edit', 'update']);
 
-    Route::get('/{client}/journals', 'JournalsController@index');
-    Route::post('/{client}/journals', 'JournalsController@store');
-    Route::delete('/{client}/journals/{journal}', 'JournalsController@destroy');
+    Route::get('/clients/{client}/bookings', 'BookingsController@index');
+    Route::delete('/bookings/{booking}', 'BookingsController@destroy');
+
+    Route::get('/clients/{client}/journals', 'JournalsController@index');
+    Route::post('/clients/{client}/journals', 'JournalsController@store');
+    Route::delete('/clients/{client}/journals/{journal}', 'JournalsController@destroy');
 });

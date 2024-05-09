@@ -9,10 +9,6 @@ class Journal extends Model
 {
     use HasFactory;
 
-    protected $appends = [
-        'url',
-    ];
-
     protected $fillable = [
         'date',
         'description',
@@ -27,8 +23,4 @@ class Journal extends Model
         return $this->belongsTo(Client::class);
     }
 
-    public function getUrlAttribute()
-    {
-        return "/clients/" . $this->client_id;
-    }
 }

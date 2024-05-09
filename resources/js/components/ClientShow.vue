@@ -46,7 +46,7 @@
                         </select>
                     </div>
 
-                    <template v-if="client.bookings && client.bookings.length > 0">
+                    <template v-if="client.bookings_count > 0">
                         <table>
                             <thead>
                                 <tr>
@@ -98,23 +98,23 @@ export default {
     data() {
         return {
             currentTab: 'bookings',
-            localBookings: [],
+            bookings: [],
             bookingsFilter: 'all',
         }
     },
 
     mounted() {
-        this.localBookings = [...this.client.bookings];
+        this.fetchBookings();
     },
 
     computed: {
         filteredAndSortedBookings() {
-            let filteredBookings = this.localBookings;
+            let filteredBookings = this.bookings;
 
             if (this.bookingsFilter == 'future') {
-                filteredBookings = this.localBookings.filter(booking => new Date(booking.start) > new Date());
+                filteredBookings = this.bookings.filter(booking => new Date(booking.start) > new Date());
             } else if (this.bookingsFilter == 'past') {
-                filteredBookings = this.localBookings.filter(booking => new Date(booking.start) < new Date());
+                filteredBookings = this.bookings.filter(booking => new Date(booking.start) < new Date());
             }
 
             return filteredBookings.sort((a, b) => new Date(b.start) - new Date(a.start));
@@ -126,8 +126,20 @@ export default {
             this.currentTab = newTab;
         },
 
+        fetchBookings() {
+            axios.get(`/clients/${this.client.id}/bookings`)
+                .then(response => {
+                    this.bookings = response.data;
+                });
+        },
+
         deleteBooking(booking) {
-            axios.delete(`/bookings/${booking.id}`);
+            axios.delete(`/bookings/${booking.id}`)
+                .then((response) => {
+                    if (response.data == 'Deleted') {
+                        this.bookings = this.bookings.filter(b => b.id != booking.id);
+                    }
+                });
         },
 
         dateTimeRange(start, end) {
