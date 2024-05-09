@@ -10,13 +10,13 @@ class Client extends Model
         'name',
         'email',
         'phone',
-        'adress',
+        'address',
         'city',
         'postcode',
     ];
 
-    protected $appends = [
-        'url',
+    protected $withCount = [
+        'bookings'
     ];
 
     public function bookings()
@@ -24,13 +24,13 @@ class Client extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public function getBookingsCountAttribute()
+    public function user()
     {
-        return $this->bookings->count();
+        return $this->belongsTo(User::class);
     }
 
-    public function getUrlAttribute()
+    public function journals()
     {
-        return "/clients/" . $this->id;
+        return $this->hasMany(Journal::class);
     }
 }

@@ -37,9 +37,16 @@
 
                 <!-- Bookings -->
                 <div class="bg-white rounded p-4" v-if="currentTab == 'bookings'">
-                    <h3 class="mb-3">List of client bookings</h3>
+                    <div class="flex justify-between">
+                        <h3 class="mb-3">List of client bookings</h3>
+                        <select class="border border-1 px-2" v-model="bookingsFilter">
+                            <option value="all">All Bookings</option>
+                            <option value="future">Future bookings only</option>
+                            <option value="past">Past bookings only</option>
+                        </select>
+                    </div>
 
-                    <template v-if="client.bookings && client.bookings.length > 0">
+                    <template v-if="client.bookings_count > 0">
                         <table>
                             <thead>
                                 <tr>
@@ -49,8 +56,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="booking in client.bookings" :key="booking.id">
-                                    <td>{{ booking.start }} - {{ booking.end }}</td>
+                                <tr v-for="booking in filteredAndSortedBookings" :key="booking.id">
+                                    <td>{{ dateTimeRange(booking.start, booking.end) }}</td>
                                     <td>{{ booking.notes }}</td>
                                     <td>
                                         <button class="btn btn-danger btn-sm" @click="deleteBooking(booking)">Delete</button>
@@ -68,9 +75,12 @@
 
                 <!-- Journals -->
                 <div class="bg-white rounded p-4" v-if="currentTab == 'journals'">
+                    <journal-form :client="client"></journal-form>
+                    <hr>
+
                     <h3 class="mb-3">List of client journals</h3>
 
-                    <p>(BONUS) TODO: implement this feature</p>
+                    <journal-list :client="client"></journal-list>
                 </div>
             </div>
         </div>
@@ -88,6 +98,26 @@ export default {
     data() {
         return {
             currentTab: 'bookings',
+            bookings: [],
+            bookingsFilter: 'all',
+        }
+    },
+
+    mounted() {
+        this.fetchBookings();
+    },
+
+    computed: {
+        filteredAndSortedBookings() {
+            let filteredBookings = this.bookings;
+
+            if (this.bookingsFilter == 'future') {
+                filteredBookings = this.bookings.filter(booking => new Date(booking.start) > new Date());
+            } else if (this.bookingsFilter == 'past') {
+                filteredBookings = this.bookings.filter(booking => new Date(booking.start) < new Date());
+            }
+
+            return filteredBookings.sort((a, b) => new Date(b.start) - new Date(a.start));
         }
     },
 
@@ -96,8 +126,40 @@ export default {
             this.currentTab = newTab;
         },
 
+        fetchBookings() {
+            axios.get(`/clients/${this.client.id}/bookings`)
+                .then(response => {
+                    this.bookings = response.data;
+                });
+        },
+
         deleteBooking(booking) {
-            axios.delete(`/bookings/${booking.id}`);
+            axios.delete(`/bookings/${booking.id}`)
+                .then((response) => {
+                    if (response.data == 'Deleted') {
+                        this.bookings = this.bookings.filter(b => b.id != booking.id);
+                    }
+                });
+        },
+
+        dateTimeRange(start, end) {
+            const dateFormatOptions = {
+                year: 'numeric',
+                month: 'long',
+                day: '2-digit',
+                weekday: 'long',
+            };
+
+            const timeFormatOptions = {
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+
+            const startDate = new Date(start).toLocaleDateString('en-GB', dateFormatOptions).replace(',', '');
+            const startTime = new Date(start).toLocaleTimeString('en-GB', timeFormatOptions);
+            const endTime = new Date(end).toLocaleTimeString('en-GB', timeFormatOptions);
+
+            return `${startDate}, ${startTime} to ${endTime}`;
         }
     }
 }

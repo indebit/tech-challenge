@@ -2,24 +2,25 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Booking extends Model
+class Journal extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'client_id',
-        'start',
-        'end',
-        'notes',
+        'date',
+        'description',
     ];
 
     protected $dates = [
-        'start',
-        'end',
+        'date',
     ];
 
     public function client()
     {
         return $this->belongsTo(Client::class);
     }
+
 }
