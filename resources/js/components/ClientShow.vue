@@ -37,7 +37,14 @@
 
                 <!-- Bookings -->
                 <div class="bg-white rounded p-4" v-if="currentTab == 'bookings'">
-                    <h3 class="mb-3">List of client bookings</h3>
+                    <div class="flex justify-between">
+                        <h3 class="mb-3">List of client bookings</h3>
+                        <select class="border border-1 px-2" v-model="bookingsFilter">
+                            <option value="all">All Bookings</option>
+                            <option value="future">Future bookings only</option>
+                            <option value="past">Past bookings only</option>
+                        </select>
+                    </div>
 
                     <template v-if="client.bookings && client.bookings.length > 0">
                         <table>
@@ -49,7 +56,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="booking in sortedBookings" :key="booking.id">
+                                <tr v-for="booking in filteredAndSortedBookings" :key="booking.id">
                                     <td>{{ dateTimeRange(booking.start, booking.end) }}</td>
                                     <td>{{ booking.notes }}</td>
                                     <td>
@@ -88,15 +95,27 @@ export default {
     data() {
         return {
             currentTab: 'bookings',
+            localBookings: [],
+            bookingsFilter: 'all',
         }
     },
 
+    mounted() {
+        this.localBookings = [...this.client.bookings];
+    },
+
     computed: {
-        sortedBookings() {
-            return this.client.bookings.sort((a, b) => {
-                return new Date(b.start) - new Date(a.start);
-            });
-        },
+        filteredAndSortedBookings() {
+            let filteredBookings = this.localBookings;
+
+            if (this.bookingsFilter == 'future') {
+                filteredBookings = this.localBookings.filter(booking => new Date(booking.start) > new Date());
+            } else if (this.bookingsFilter == 'past') {
+                filteredBookings = this.localBookings.filter(booking => new Date(booking.start) < new Date());
+            }
+
+            return filteredBookings.sort((a, b) => new Date(b.start) - new Date(a.start));
+        }
     },
 
     methods: {
